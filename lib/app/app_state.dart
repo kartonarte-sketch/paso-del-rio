@@ -241,6 +241,21 @@ class AppState extends ChangeNotifier {
     await refresh();
   }
 
+  Future<void> savePackage(ServicePackage package) async {
+    await repository.savePackage(package);
+    await refresh();
+  }
+
+  Future<void> deletePackage(String id) async {
+    await repository.deletePackage(id);
+    await refresh();
+  }
+
+  Future<void> resetDefaultPackages() async {
+    await repository.resetDefaultPackages();
+    await refresh();
+  }
+
   int get peopleToday {
     final now = DateTime.now();
     return groups

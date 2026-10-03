@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 enum UserRole { admin, reception, waiter, kitchen }
 
 extension UserRoleLabel on UserRole {
@@ -18,6 +20,7 @@ class ServicePackage {
     required this.priceMinor,
     required this.includes,
     required this.lunchVouchers,
+    this.active = true,
   });
 
   final String id;
@@ -27,16 +30,39 @@ class ServicePackage {
   final int priceMinor;
   final String includes;
   final int lunchVouchers;
+  final bool active;
+
+  ServicePackage copyWith({
+    String? id,
+    String? name,
+    String? color,
+    int? priceAdult,
+    int? priceMinor,
+    String? includes,
+    int? lunchVouchers,
+    bool? active,
+  }) =>
+      ServicePackage(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        color: color ?? this.color,
+        priceAdult: priceAdult ?? this.priceAdult,
+        priceMinor: priceMinor ?? this.priceMinor,
+        includes: includes ?? this.includes,
+        lunchVouchers: lunchVouchers ?? this.lunchVouchers,
+        active: active ?? this.active,
+      );
 
   factory ServicePackage.fromJson(String id, Map<String, dynamic> json) =>
       ServicePackage(
         id: id,
-        name: json['name'] as String,
-        color: json['color'] as String,
-        priceAdult: json['priceAdult'] as int,
-        priceMinor: json['priceMinor'] as int,
-        includes: json['includes'] as String,
-        lunchVouchers: json['lunchVouchers'] as int? ?? 0,
+        name: json['name'] as String? ?? 'Paquete',
+        color: json['color'] as String? ?? 'Verde',
+        priceAdult: (json['priceAdult'] as num?)?.toInt() ?? 0,
+        priceMinor: (json['priceMinor'] as num?)?.toInt() ?? 0,
+        includes: json['includes'] as String? ?? '',
+        lunchVouchers: (json['lunchVouchers'] as num?)?.toInt() ?? 0,
+        active: json['active'] as bool? ?? true,
       );
 
   Map<String, dynamic> toJson() => {
@@ -46,7 +72,60 @@ class ServicePackage {
     'priceMinor': priceMinor,
     'includes': includes,
     'lunchVouchers': lunchVouchers,
+    'active': active,
   };
+}
+
+Color packageColorToColor(String? colorName) {
+  if (colorName == null || colorName.trim().isEmpty) {
+    return const Color(0xFF2E7D32);
+  }
+  final clean = colorName.trim().toLowerCase();
+  if (clean.startsWith('#')) {
+    final hex = clean.substring(1);
+    if (hex.length == 6) {
+      final val = int.tryParse('FF$hex', radix: 16);
+      if (val != null) return Color(val);
+    }
+  }
+  if (clean.contains('naranja') || clean.contains('orange')) {
+    return const Color(0xFFE65100);
+  }
+  if (clean.contains('verde') || clean.contains('green')) {
+    return const Color(0xFF2E7D32);
+  }
+  if (clean.contains('azul') || clean.contains('blue')) {
+    return const Color(0xFF1565C0);
+  }
+  if (clean.contains('dorad') || clean.contains('gold')) {
+    return const Color(0xFFC59B27);
+  }
+  if (clean.contains('amarill') || clean.contains('yellow')) {
+    return const Color(0xFFF57F17);
+  }
+  if (clean.contains('roj') || clean.contains('red')) {
+    return const Color(0xFFC62828);
+  }
+  if (clean.contains('morad') || clean.contains('purp')) {
+    return const Color(0xFF6A1B9A);
+  }
+  if (clean.contains('negro') || clean.contains('black')) {
+    return const Color(0xFF212121);
+  }
+  if (clean.contains('blanc') || clean.contains('white')) {
+    return const Color(0xFFCFD8DC);
+  }
+  return const Color(0xFF1B4332);
+}
+
+Color getContrastTextColor(Color background) {
+  return background.computeLuminance() > 0.45 ? const Color(0xFF1A1A1A) : Colors.white;
+}
+
+extension ServicePackageColor on ServicePackage {
+  Color get displayColor => packageColorToColor(color);
+  Color get onDisplayColor => getContrastTextColor(displayColor);
+  Color get lightColor => displayColor.withValues(alpha: 0.12);
 }
 
 class MenuProduct {

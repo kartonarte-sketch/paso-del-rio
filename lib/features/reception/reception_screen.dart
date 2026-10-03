@@ -23,6 +23,8 @@ class EcoHotelTicketWidget extends StatelessWidget {
   final int totalMinors;
   final int pets;
   final String totalPriceFormatted;
+  final String? packageName;
+  final String? packageColor;
 
   const EcoHotelTicketWidget({
     super.key,
@@ -35,6 +37,8 @@ class EcoHotelTicketWidget extends StatelessWidget {
     required this.totalMinors,
     required this.pets,
     required this.totalPriceFormatted,
+    this.packageName,
+    this.packageColor,
   });
 
   @override
@@ -130,10 +134,36 @@ class EcoHotelTicketWidget extends StatelessWidget {
           Text('• Motos: $motorcycles', style: const TextStyle(fontSize: 12)),
           const Divider(height: 20, thickness: 1),
           const Text(
-            'DETALLE DE AFORO',
+            'DETALLE DE AFORO Y CONTROL',
             style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF1B4D3E)),
           ),
           const SizedBox(height: 6),
+          if (packageName != null) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: Text('• Paquete: $packageName', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                ),
+                if (packageColor != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: packageColorToColor(packageColor),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'MANILLA: ${packageColor!.toUpperCase()}',
+                      style: TextStyle(
+                        color: getContrastTextColor(packageColorToColor(packageColor)),
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 3),
+          ],
           Text('• Manillas Entregadas: ${totalAdults + totalMinors} (Adultos: $totalAdults, Menores: $totalMinors)', style: const TextStyle(fontSize: 12)),
           Text('• Mascotas a bordo: $pets', style: const TextStyle(fontSize: 12)),
           const Divider(height: 20, thickness: 1),
@@ -320,6 +350,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
     required int pets,
     required String totalPaidFormatted,
     required String transportInfo,
+    String? packageName,
+    String? packageColor,
   }) {
     final ticketKey = GlobalKey();
     final generatedAt = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
@@ -351,6 +383,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                   totalMinors: minors,
                   pets: pets,
                   totalPriceFormatted: totalPaidFormatted,
+                  packageName: packageName,
+                  packageColor: packageColor,
                 ),
               ),
             ),
@@ -464,35 +498,230 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
               ),
               const SizedBox(height: 12),
               
-              DropdownButtonFormField<String>(
-                initialValue: _packageId,
-                isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Paquete de Servicio', border: OutlineInputBorder()),
-                items: state.packages.map((item) => DropdownMenuItem(
-                  value: item.id,
-                  child: Text(
-                    '${item.name} (Ad: \$${item.priceAdult} / Men: \$${item.priceMinor})',
-                    overflow: TextOverflow.ellipsis,
+              const SizedBox(height: 14),
+              Row(
+                children: const [
+                  Icon(Icons.loyalty_outlined, size: 20, color: Color(0xFF1B4D3E)),
+                  SizedBox(width: 8),
+                  Text(
+                    'Selección de Paquete y Control de Manillas',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1B4D3E)),
                   ),
-                )).toList(),
-                onChanged: (value) => setState(() => _packageId = value),
+                ],
               ),
               const SizedBox(height: 8),
 
+              // Tarjetas interactivas con el color distintivo de cada paquete
+              Column(
+                children: state.packages.map((item) {
+                  final isSelected = item.id == _packageId;
+                  final itemColor = item.displayColor;
+                  final itemLight = item.lightColor;
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => setState(() => _packageId = item.id),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isSelected ? itemLight : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isSelected ? itemColor : Colors.grey.shade300,
+                            width: isSelected ? 2.5 : 1.0,
+                          ),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: itemColor.withValues(alpha: 0.2),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: itemColor,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.local_activity_rounded,
+                                size: 18,
+                                color: item.onDisplayColor,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        item.name,
+                                        style: TextStyle(
+                                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
+                                          fontSize: 14,
+                                          color: isSelected ? const Color(0xFF1B4D3E) : Colors.black87,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1.5),
+                                        decoration: BoxDecoration(
+                                          color: itemColor,
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          item.color.toUpperCase(),
+                                          style: TextStyle(
+                                            color: item.onDisplayColor,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    item.includes,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isSelected ? const Color(0xFF1B4D3E) : Colors.black54,
+                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  item.priceAdult > 0 ? money.format(item.priceAdult) : 'Por definir',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: item.priceAdult > 0 ? const Color(0xFF1B4D3E) : Colors.amber.shade900,
+                                  ),
+                                ),
+                                Text(
+                                  item.priceMinor > 0 ? 'Menor: ${money.format(item.priceMinor)}' : 'Menor: --',
+                                  style: const TextStyle(fontSize: 10, color: Colors.black54),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                              color: isSelected ? itemColor : Colors.grey.shade400,
+                              size: 22,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 4),
+
+              // BANNER VIBRANTE DE CONTROL Y ASIGNACIÓN DE MANILLAS (CERO ERRORES)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: Colors.amber.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.amber.shade300),
+                  color: selected.displayColor,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: selected.displayColor.withValues(alpha: 0.4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.local_activity, size: 18, color: Color(0xFFB78103)),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Manillas asignadas: Color ${selected.color}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF795548)),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.local_activity_rounded,
+                        size: 28,
+                        color: selected.onDisplayColor,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'MANILLA A ENTREGAR: COLOR ${selected.color.toUpperCase()}',
+                                style: TextStyle(
+                                  color: selected.onDisplayColor,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 14,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              if (totalManillas > 0) ...[
+                                const Spacer(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(14),
+                                    boxShadow: const [
+                                      BoxShadow(color: Colors.black12, blurRadius: 4),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    '$totalManillas MANILLAS',
+                                    style: TextStyle(
+                                      color: selected.displayColor,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            '${selected.name} • ${selected.includes}',
+                            style: TextStyle(
+                              color: selected.onDisplayColor.withValues(alpha: 0.95),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Tarifa: ${selected.priceAdult > 0 ? money.format(selected.priceAdult) : "Por definir"} adulto · ${selected.priceMinor > 0 ? money.format(selected.priceMinor) : "Por definir"} menor',
+                            style: TextStyle(
+                              color: selected.onDisplayColor.withValues(alpha: 0.85),
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -748,12 +977,37 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                   const Center(child: Padding(padding: EdgeInsets.all(16), child: Text('Sin ingresos')))
                 else
                   ...state.groups.take(5).map(
-                        (g) => ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(g.leader, style: const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text('${g.adults} Adultos · ${g.packageColor}'),
-                          trailing: Text(money.format(g.totalPaid), style: const TextStyle(fontWeight: FontWeight.bold)),
-                        ),
+                        (g) {
+                          final pColor = packageColorToColor(g.packageColor);
+                          final pTextColor = getContrastTextColor(pColor);
+
+                          return ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(g.leader, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Row(
+                              children: [
+                                Text('${g.adults} Ad · ${g.minors} Men'),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: pColor,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    'MANILLA ${g.packageColor.toUpperCase()}',
+                                    style: TextStyle(
+                                      color: pTextColor,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            trailing: Text(money.format(g.totalPaid), style: const TextStyle(fontWeight: FontWeight.bold)),
+                          );
+                        },
                       ),
               ],
             ),
@@ -837,11 +1091,14 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
   void _showPaymentDialog(
     BuildContext context,
     AppState state,
-    dynamic selectedPackage,
+    ServicePackage selectedPackage,
     int adults,
     int minors,
     int pets,
   ) {
+    final customAdultPriceController = TextEditingController(
+      text: selectedPackage.priceAdult > 0 ? selectedPackage.priceAdult.toString() : '0',
+    );
     final discountController = TextEditingController(text: '0');
     final pinController = TextEditingController();
     final cashController = TextEditingController();
@@ -866,8 +1123,11 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
+            final effectiveAdultPrice = selectedPackage.priceAdult > 0
+                ? selectedPackage.priceAdult
+                : (int.tryParse(customAdultPriceController.text.replaceAll('.', '').trim()) ?? 0);
             final minorsSubtotal = noChargeMinors ? 0 : (minors * selectedPackage.priceMinor);
-            final subtotal = (adults * selectedPackage.priceAdult) + minorsSubtotal;
+            final subtotal = (adults * effectiveAdultPrice) + minorsSubtotal;
 
             final discountInput = double.tryParse(discountController.text.replaceAll('.', '')) ?? 0.0;
             final cashInput = double.tryParse(cashController.text.replaceAll('.', '')) ?? 0.0;
@@ -909,6 +1169,78 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      // Banner de identificación de paquete y manilla
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: selectedPackage.displayColor,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: selectedPackage.displayColor.withValues(alpha: 0.35),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.local_activity_rounded, color: selectedPackage.onDisplayColor, size: 22),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'PAQUETE: ${selectedPackage.name.toUpperCase()}  •  MANILLA: ${selectedPackage.color.toUpperCase()}',
+                                style: TextStyle(
+                                  color: selectedPackage.onDisplayColor,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      if (selectedPackage.priceAdult == 0) ...[
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.shade50,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.amber.shade400),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Tarifa Especial / Por Definir',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF795548)),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Este paquete no tiene tarifa fija por adulto. Ingrese el valor acordado por persona:',
+                                style: TextStyle(fontSize: 11, color: Colors.black87),
+                              ),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: customAdultPriceController,
+                                keyboardType: TextInputType.number,
+                                decoration: const InputDecoration(
+                                  labelText: 'Tarifa acordada por adulto (\$)',
+                                  prefixIcon: Icon(Icons.edit_outlined),
+                                  isDense: true,
+                                  border: OutlineInputBorder(),
+                                ),
+                                onChanged: (_) => setStateDialog(() {}),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
                       // Vista previa del tiquet vertical estilo 9:16
                       Center(
                         child: Container(
@@ -928,6 +1260,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                                 totalMinors: minors,
                                 pets: pets,
                                 totalPriceFormatted: money.format(totalPaid),
+                                packageName: selectedPackage.name,
+                                packageColor: selectedPackage.color,
                               ),
                             ),
                           ),
@@ -1208,7 +1542,15 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                     Navigator.pop(dialogContext);
 
                     // 2. Registrar en base de datos
-                    await _executeRegistration(state, selectedPackage, adults, minors, pets, totalPaid, paymentMethod);
+                    await _executeRegistration(
+                      state,
+                      selectedPackage.copyWith(priceAdult: effectiveAdultPrice),
+                      adults,
+                      minors,
+                      pets,
+                      totalPaid,
+                      paymentMethod,
+                    );
 
                     // 3. Mostrar diálogo con el tiquet en formato vertical (9:16)
                     if (!context.mounted) return;
@@ -1220,6 +1562,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                       pets: pets,
                       totalPaidFormatted: formattedTotal,
                       transportInfo: transportSummary.isEmpty ? 'A pie' : transportSummary,
+                      packageName: selectedPackage.name,
+                      packageColor: selectedPackage.color,
                     );
                   },
                   icon: const Icon(Icons.check_circle, size: 18),

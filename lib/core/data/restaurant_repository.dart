@@ -24,27 +24,45 @@ class RestaurantRepository {
   String nextId() => _uuid.v4();
 
   Future<void> seedIfEmpty() async {
-    if (await _database.count(Collections.tables) > 0) return;
-    for (var i = 0; i < seedPackages.length; i++) {
-      final item = Map<String, dynamic>.from(seedPackages[i]);
-      final id = item.remove('id')! as String;
-      await _put(Collections.packages, id, item);
+    final existingPackages = await _database.list(Collections.packages);
+    if (existingPackages.isEmpty) {
+      for (var i = 0; i < seedPackages.length; i++) {
+        final item = Map<String, dynamic>.from(seedPackages[i]);
+        final id = item.remove('id')! as String;
+        await _put(Collections.packages, id, item);
+      }
+    } else {
+      for (final p in seedPackages) {
+        final id = p['id']! as String;
+        final alreadyPresent = existingPackages.any((doc) => doc.id == id);
+        if (!alreadyPresent) {
+          final item = Map<String, dynamic>.from(p);
+          item.remove('id');
+          await _put(Collections.packages, id, item);
+        }
+      }
     }
-    for (var i = 0; i < seedProducts.length; i++) {
-      final item = Map<String, dynamic>.from(seedProducts[i]);
-      item.putIfAbsent('cost', () => 0);
-      item['active'] = true;
-      await _put(Collections.products, 'product-${i + 1}', item);
+
+    if (await _database.count(Collections.tables) == 0) {
+      for (var i = 1; i <= 12; i++) {
+        await _put(Collections.tables, 'principal-$i', {
+          'zoneId': 'principal',
+          'zoneName': 'Zona Principal',
+          'number': i,
+          'status': 'free',
+          'groupId': null,
+          'groupName': null,
+        });
+      }
     }
-    for (var i = 1; i <= 12; i++) {
-      await _put(Collections.tables, 'principal-$i', {
-        'zoneId': 'principal',
-        'zoneName': 'Zona Principal',
-        'number': i,
-        'status': 'free',
-        'groupId': null,
-        'groupName': null,
-      });
+
+    if (await _database.count(Collections.products) == 0) {
+      for (var i = 0; i < seedProducts.length; i++) {
+        final item = Map<String, dynamic>.from(seedProducts[i]);
+        item.putIfAbsent('cost', () => 0);
+        item['active'] = true;
+        await _put(Collections.products, 'product-${i + 1}', item);
+      }
     }
   }
 
@@ -206,6 +224,30 @@ class RestaurantRepository {
 
   Future<void> saveProduct(MenuProduct product) =>
       _put(Collections.products, product.id, product.toJson());
+
+  Future<void> savePackage(ServicePackage package) =>
+      _put(Collections.packages, package.id, package.toJson());
+
+  Future<void> deletePackage(String id) {
+    return _database.put(
+      DocumentRecord(
+        collection: Collections.packages,
+        id: id,
+        data: const {},
+        updatedAt: DateTime.now().toUtc(),
+        deviceId: _database.deviceId,
+        deleted: true,
+      ),
+    );
+  }
+
+  Future<void> resetDefaultPackages() async {
+    for (final p in seedPackages) {
+      final item = Map<String, dynamic>.from(p);
+      final id = item.remove('id')! as String;
+      await _put(Collections.packages, id, item);
+    }
+  }
 
   Future<void> _put(String collection, String id, Map<String, dynamic> data) {
     return _database
