@@ -1,0 +1,7 @@
+{
+  "HUB_SECRET": "reemplace-por-un-secreto-largo",
+  "FIREBASE_PROJECT_ID": "su-proyecto-firebase",
+  "FIREBASE_API_KEY": "su-api-key-web",
+  "FIREBASE_EMAIL": "sincronizador@su-dominio.com",
+  "FIREBASE_PASSWORD": "reemplace-esta-clave"
+}

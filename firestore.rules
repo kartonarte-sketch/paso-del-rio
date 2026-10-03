@@ -1,0 +1,28 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function activeStaff(restaurantId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/restaurants/$(restaurantId)/staff/$(request.auth.uid))
+        && get(/databases/$(database)/documents/restaurants/$(restaurantId)/staff/$(request.auth.uid)).data.active == true;
+    }
+
+    match /restaurants/{restaurantId}/staff/{userId} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow write: if false;
+    }
+
+    match /restaurants/{restaurantId}/{collection}/{documentId} {
+      allow read, write: if collection != 'staff' && activeStaff(restaurantId);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

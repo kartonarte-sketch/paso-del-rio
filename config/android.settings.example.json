@@ -1,0 +1,4 @@
+{
+  "HUB_URL": "http://192.168.1.10:8787",
+  "HUB_SECRET": "el-mismo-secreto-largo-del-pc"
+}
