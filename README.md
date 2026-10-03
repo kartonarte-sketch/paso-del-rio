@@ -37,14 +37,21 @@ Abre `http://localhost:59420`. Tras el login, cada módulo queda en:
 - `http://localhost:59420/#/barra`
 - `http://localhost:59420/#/admin`
 
-En Chrome la base es en memoria: al recargar se pierden los datos de esa sesión.
-Si el navegador bloquea el audio automático, usa `Activar sonido` en el splash.
+En la versión PWA web, los datos persisten localmente en el navegador (`localStorage`), permitiendo crear grupos, reservas, mesas y comandas sin que se borren al recargar.
 
-Publicar en Firebase Hosting (queda un enlace `https://TU_PROYECTO.web.app`):
+### Despliegue en línea (Firebase Hosting)
+
+El proyecto se encuentra publicado en vivo en:
+**[https://paso-del-rio-hotel.web.app](https://paso-del-rio-hotel.web.app)**
+
+Para volver a compilar y publicar las últimas actualizaciones:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts/deploy_pwa.ps1 -ProjectId ID_DEL_PROYECTO
+powershell -ExecutionPolicy Bypass -File scripts/deploy_pwa.ps1
 ```
+
+Repositorio en GitHub:
+**[https://github.com/kartonarte-sketch/paso-del-rio](https://github.com/kartonarte-sketch/paso-del-rio)**
 
 ## Accesos iniciales
 
