@@ -1626,19 +1626,6 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
     );
   }
 
-  Widget _ticketRow(String label, String value, {bool isBold = false, double size = 12, Color? color}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: TextStyle(fontSize: size, fontWeight: isBold ? FontWeight.bold : FontWeight.w500)),
-          Text(value, style: TextStyle(fontSize: size, fontWeight: isBold ? FontWeight.bold : FontWeight.w600, color: color ?? Colors.black87)),
-        ],
-      ),
-    );
-  }
-
   Widget _statBox(String label, String value, IconData icon, {bool isHighlight = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

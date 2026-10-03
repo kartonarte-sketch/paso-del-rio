@@ -25,7 +25,14 @@ class RestaurantRepository {
 
   Future<void> seedIfEmpty() async {
     final existingPackages = await _database.list(Collections.packages);
-    if (existingPackages.isEmpty) {
+    for (final legacyId in ['general-verde', 'vip-dorado']) {
+      if (existingPackages.any((doc) => doc.id == legacyId)) {
+        await deletePackage(legacyId);
+      }
+    }
+
+    if (existingPackages.isEmpty ||
+        !existingPackages.any((p) => p.id == 'paquete-naranja')) {
       for (var i = 0; i < seedPackages.length; i++) {
         final item = Map<String, dynamic>.from(seedPackages[i]);
         final id = item.remove('id')! as String;

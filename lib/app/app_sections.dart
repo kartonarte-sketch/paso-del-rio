@@ -34,6 +34,13 @@ const kAppSections = <AppSection>[
     summary: 'Ingreso de grupos, paquetes y tiquetes.',
   ),
   AppSection(
+    slug: 'paquetes',
+    label: 'Módulo Paquetes',
+    icon: Icons.loyalty_outlined,
+    roles: {UserRole.admin, UserRole.reception},
+    summary: 'Definir, crear y modificar paquetes y colores de manillas.',
+  ),
+  AppSection(
     slug: 'reservas',
     label: 'Reservas',
     icon: Icons.event_available_outlined,

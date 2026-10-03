@@ -10,16 +10,18 @@ import '../admin/admin_screen.dart';
 import '../bar/bar_screen.dart';
 import '../cash/cash_screen.dart';
 import '../dashboard/dashboard_screen.dart';
+import '../events/events_screen.dart';
 import '../orders/orders_screen.dart';
+import '../packages/packages_screen.dart';
 import '../production/production_screen.dart';
 import '../reception/reception_screen.dart';
 import '../reservations/reservations_screen.dart';
 import '../tables/tables_screen.dart';
-import '../events/events_screen.dart';
 
 const _sectionPages = <Widget>[
   DashboardScreen(),
   ReceptionScreen(),
+  PackagesScreen(),
   ReservationsScreen(),
   EventsScreen(),
   TablesScreen(),
